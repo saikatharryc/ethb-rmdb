@@ -1,5 +1,8 @@
 const Redis = require("ioredis");
 const Web3 = require("web3");
+if (!process.env.WEB3_PROVIDER) {
+    require("dotenv").config();
+}
 const { bullSystem } = require("./bullSystem");
 
 var redis = new Redis(
@@ -26,7 +29,7 @@ const init = async () => {
     } else if (result && result == currentBlock) {
         console.log("<<< No New Block To Mine >>>");
         await redis.quit();
-        process.exit(0);
+        return false;
     } else if (result && result < currentBlock) {
         redis.set("last_block_mined", currentBlock);
         startFrom = result;
@@ -53,32 +56,21 @@ const init = async () => {
                     to: txn.to,
                     transactionHash: txn.hash
                 };
+                console.log(jobData);
                 await bullSystem.addJob("data", jobData);
                 redis.set("last_txn_count", j);
             } catch (x) {
                 console.error(x);
                 await redis.quit();
-                process.exit(0);
+                return false;
             }
         }
     }
-    await redis.quit();
-    process.exit(0);
+    return true;
 };
 try {
-    init();
+    return init();
 } catch (ex) {
     console.error(ex);
-    process.exit(0);
+    return false;
 }
-process
-    .on("SIGINT", async () => {
-        console.log(">>>>>>>");
-        await redis.quit();
-        process.exit(0);
-    })
-    .on("SIGTERM", async () => {
-        console.log("<<<<<<<");
-        await redis.quit();
-        process.exit(0);
-    });
