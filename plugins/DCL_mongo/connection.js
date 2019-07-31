@@ -1,3 +1,4 @@
+const fastify = require('fastify')
 const mongoose = require('mongoose')
 if (!process.env['MONGO_URI']) {
   // load the environment variables
