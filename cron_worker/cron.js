@@ -14,7 +14,7 @@ var web3 = new Web3(process.env.WEB3_PROVIDER);
 
 let currentBlock;
 let startFrom;
-const init = async () => {
+const init = async done => {
     // Initial Run
     currentBlock = await web3.eth.getBlockNumber();
     currentBlock = parseInt(currentBlock.toString());
@@ -29,7 +29,7 @@ const init = async () => {
     } else if (result && result == currentBlock) {
         console.log("<<< No New Block To Mine >>>");
         await redis.quit();
-        return false;
+        done("<<< No New Block To Mine >>>");
     } else if (result && result < currentBlock) {
         redis.set("last_block_mined", currentBlock);
         startFrom = result;
@@ -62,15 +62,10 @@ const init = async () => {
             } catch (x) {
                 console.error(x);
                 await redis.quit();
-                return false;
+                done(x);
             }
         }
     }
     return true;
 };
-try {
-    return init();
-} catch (ex) {
-    console.error(ex);
-    return false;
-}
+module.exports = init;
