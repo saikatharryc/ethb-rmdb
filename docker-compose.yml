@@ -1,0 +1,51 @@
+version: "3.7"
+services:
+  redis:
+    image: redis
+    container_name: redis
+    networks:
+      - eth-net
+    expose:
+        - 6379
+  cron_worker:
+    env_file: .env
+    environment:
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - MONGO_URI=${MONGO_URI}
+      - WEB3_PROVIDER=${WEB3_PROVIDER}
+    build: ./cron_worker
+    ports:
+      - "8000:8000"
+    networks:
+      - eth-net
+    depends_on:
+      - redis
+    deploy:
+      restart_policy:
+        condition: on-failure
+        delay: 5s
+        max_attempts: 3
+        window: 120s
+  main_app:
+    env_file: .env
+    environment:
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - MONGO_URI=${MONGO_URI}
+    build: .
+    ports:
+      - "3000:3000"
+    networks:
+      - eth-net
+    depends_on:
+      - redis
+    deploy:
+      restart_policy:
+        condition: on-failure
+        delay: 5s
+        max_attempts: 3
+        window: 120s
+networks:
+  eth-net:
+    driver: bridge
