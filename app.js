@@ -4,7 +4,6 @@ const path = require('path')
 const AutoLoad = require('fastify-autoload')
 
 module.exports = function (fastify, opts, next) {
-  
   // This loads all plugins defined in plugins
   // those should be support plugins that are reused
   // through your application
