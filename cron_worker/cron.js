@@ -2,7 +2,11 @@ const Redis = require("ioredis");
 const Web3 = require("web3");
 const { bullSystem } = require("./bullSystem");
 
-var redis = new Redis();
+var redis = new Redis(
+    `redis://:${process.env.REDIS_PASSWORD}@${process.env.REDIS_HOST}:${
+        process.env.REDIS_PORT
+    }`
+);
 var web3 = new Web3(process.env.WEB3_PROVIDER);
 
 let currentBlock;
